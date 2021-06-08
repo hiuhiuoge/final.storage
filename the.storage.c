@@ -11,11 +11,11 @@
 #include <unistd.h>
 
 #define MAX 100
-#define PORT 8080 
+#define PORT 8002 
 #define MAX_CLIENT 20
 #define SA struct sockaddr
 
-void sentFile(int sockfd, const char *file_name, int size) { 
+void downloadFile(int sockfd, const char *file_name, int size) { 
     char buff[1025];     
 
     int fp;
@@ -65,12 +65,11 @@ void uploadFile(int sockfd) {
         return;
     }
     else {
-        for(j=0;j<sizeof(buff);j++){
-            fputc(data[j],fp);
+        for(i = 0; i<sizeof(buff); i++){
+            fputc(data[i],fp);
         }
     }
     close (fp);
-
     printf("File Upload successfully !!! \n");
 
 }
@@ -170,17 +169,25 @@ int main() {
 			if (connfd[i] > 0 && FD_ISSET(connfd[i], &set)) {
 				if (read(connfd[i], filename, sizeof(filename)) > 0) {
                     
-                    
                     fsize = findSize(filename);
                     send(connfd[i], (char*)&fsize, 4, 0);
                     if (fsize > 0) {
-                        printf("Sending file\n");
-                        sentFile(connfd[i], filename,fsize);
+                        printf("Sending\n");
+                        downloadFile(connfd[i], filename, fsize);
                     }
-                    shutdown(connfd[i],SHUT_RDWR);
+
+                    if (fsize < 0) {
+                        printf("Recieving\n")
+                        uploadFile(connfd[i], filename, fsize);
+                    }
+                    
+                    else {
+                    shutdown(connfd[i], SHUT_RDWR);
                     close(connfd[i]);
 					connfd[i] = 0;
+                    }
 				}
+				
 				else {
 					printf("connection %d has disconnected.\n", connfd[i]);
                     shutdown(connfd[i],SHUT_RDWR);
