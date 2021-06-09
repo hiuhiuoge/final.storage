@@ -67,16 +67,12 @@ void downloadFile(int sockfd, const char *file_name) {
         return ;
     }
 
+    char msg[10000] = { 0 };
     while (fgets(buff, sizeof(buff), fp)) {
-        send(sockfd, buff, strlen(buff), 0);
+        strcat(msg, buff);
         bzero(buff, sizeof(buff));
     }
-    //int i;
-    //while (( i = read(fp, buff, 1024)) != 0 ) {
-    //    send(sockfd, buff, i, 0);  
-    //    memset(buff, 0, 1024);
-
-    //}
+    send(sockfd, msg, strlen(msg), 0);
     fclose(fp);  
     
     printf("File Sent !!! \n");
@@ -138,6 +134,7 @@ void listFiles(int sockfd)
     system("wc -c temp");
     fclose(fp);
     send(sockfd, msg, strlen(msg), 0);
+    system("echo Content; cat temp");
     unlink("temp");
 }
 
